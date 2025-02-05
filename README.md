@@ -1,0 +1,1 @@
+# semiauto-curriculo
