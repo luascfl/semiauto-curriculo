@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Currículo JSON</title>
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-container, .json-container, .chatgpt-container {
+            flex: 1 1 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        @media (min-width: 768px) {
+            .form-container, .json-container, .chatgpt-container {
+                flex: 1 1 calc(50% - 20px);
+            }
+        }
+        @media (min-width: 1024px) {
+            .form-container, .json-container, .chatgpt-container {
+                flex: 1 1 calc(33.333% - 20px);
+            }
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #e0e0e0;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #6200ee;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        .experience-section, .certification-section, .education-section, .language-section, .profile-section, .volunteer-section {
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1e1e1e;
+        }
+        .add-experience, .add-certification, .add-education, .add-language, .add-profile, .add-volunteer {
+            margin-top: 10px;
+        }
+        .readonly-textarea {
+            background-color: #2d2d2d;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .copy-button {
+            margin-top: 10px;
+            background-color: #03dac6;
+        }
+        .copy-button:hover {
+            background-color: #018786;
+        }
+        .help-button {
+            background: none;
+            border: none;
+            color: #03dac6;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .help-button:hover {
+            color: #018786;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            flex: 1;
+        }
+        .help-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .help-section p {
+            margin-bottom: 10px;
+        }
+
+        #fixedJson {
+            height: 100px;
+            margin-bottom: 10px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            padding: 8px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-container">
+        <h2>Formulário de Currículo</h2>
+        <form id="curriculumForm">
+            <button type="button" onclick="importJSON()">Importar JSON</button>
+            <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSONFile(event)">
+            
+            <label for="layout">Layout de Tipografia:</label>
+            <div class="input-group">
+                <select id="layout" name="layout">
+                    <option value="merriweather">Merriweather - Altura da linha 1.35</option>
+                    <option value="poppins">Poppins - Altura da linha 0.95</option>
+                </select>
+                <button type="button" class="help-button material-icons" onclick="alert('Escolha o layout de tipografia: Merriweather com altura de linha 1.35 ou Poppins com altura de linha 0.95.')">info</button>
+            </div>
+
+            <label for="name">Nome:</label>
+            <div class="input-group">
+                <input type="text" id="name" name="name">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome Sobrenome\nex: João Silva')">info</button>
+            </div>
+
+            <label for="email">Email:</label>
+            <div class="input-group">
+                <input type="email" id="email" name="email">
+                <button type="button" class="help-button material-icons" onclick="alert('seu.email@gmail.com\nex: joao.silva@gmail.com')">info</button>
+            </div>
+
+            <label for="phone">Telefone:</label>
+            <div class="input-group">
+                <input type="text" id="phone" name="phone">
+                <button type="button" class="help-button material-icons" onclick="alert('(DDD) XXXXX-XXXX\nex: 71940028922')">info</button>
+            </div>
+
+            <label for="headline">Cargo:</label>
+            <div class="input-group">
+                <input type="text" id="headline" name="headline" value="[cargo]" readonly class="readonly-textarea">
+                <button type="button" class="help-button material-icons" onclick="alert('Essa parte não é editável porque servirá para a estrutura do ChatGPT.')">info</button>
+            </div>
+
+            <label for="location">Localização:</label>
+            <div class="input-group">
+                <input type="text" id="location" name="location">
+                <button type="button" class="help-button material-icons" onclick="alert('Bairro, Cidade, Estado\nex: Ipiranga, Salvador, Bahia')">info</button>
+            </div>
+
+            <label for="birthdate">Data de Nascimento:</label>
+            <div class="input-group">
+                <input type="text" id="birthdate" name="birthdate">
+                <button type="button" class="help-button material-icons" onclick="alert('DD/MM/AAAA - sua idade\nex: 10/07/2005 - 19 anos')">info</button>
+            </div>
+
+            <h3>Redes Sociais</h3>
+            <div id="profileContainer">
+                <div class="profile-section">
+                    <label for="profileNetwork1">Rede Social:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileNetwork1" name="profileNetwork1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome da rede social\nex: LinkedIn, GitHub')">info</button>
+                    </div>
+
+                    <label for="profileUsername1">Nome de Usuário:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileUsername1" name="profileUsername1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome de usuário na rede social\nex: joaosilva')">info</button>
+                    </div>
+
+                    <label for="profileURL1">URL:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileURL1" name="profileURL1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Link completo do perfil\nex: https://linkedin.com/in/joaosilva')">info</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="add-profile" onclick="addProfile()">+ Adicionar Perfil</button>
+
+            <label for="summary">Objetivo:</label>
+            <div class="input-group">
+                <textarea id="summary" name="summary" class="readonly-textarea" readonly>[objetivo profissional]</textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Essa parte não é editável porque servirá para a estrutura do ChatGPT.')">info</button>
+            </div>
+
+            <label for="skills">Habilidades:</label>
+            <div class="input-group">
+                <textarea id="skills" name="skills" class="readonly-textarea" readonly>[palavrachave1] | [palavrachave2] | [palavrachave3] | [...]</textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Essa parte não é editável porque servirá para a estrutura do ChatGPT.')">info</button>
+            </div>
+
+            <h3>Formação Acadêmica</h3>
+            <div id="educationContainer">
+                <div class="education-section">
+                    <label for="educationStudyType1">Tipo de Curso:</label>
+                    <div class="input-group">
+                        <input type="text" id="educationStudyType1" name="educationStudyType1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Ensino médio, Ensino superior, Bacharelado, Licenciatura ou Tecnólogo\nex: Bacharelado em Ciência da Computação')">info</button>
+                    </div>
+
+                    <label for="educationInstitution1">Instituição:</label>
+                    <div class="input-group">
+                        <input type="text" id="educationInstitution1" name="educationInstitution1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Universidade, Colégio, Centro educacional\nex: Universidade Federal da Bahia')">info</button>
+                    </div>
+
+                    <label for="educationDate1">Data de início e término/estimativa:</label>
+                    <div class="input-group">
+                        <input type="text" id="educationDate1" name="educationDate1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Mês e ano até mês e ano ou Mês e ano até o momento\nex.1: Setembro de 2025 até outubro de 2025\nex.2: Junho de 2025 até o momento\nex.3: 09/2025 - 10/2025\nex.4: 06/2025 até o momento')">info</button>
+                    </div>
+
+                    <label for="educationArea1">Área:</label>
+                    <div class="input-group">
+                        <input type="text" id="educationArea1" name="educationArea1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Área de estudo\nex: Ciência da Computação')">info</button>
+                    </div>
+
+                    <label for="educationSummary1">Resumo:</label>
+                    <div class="input-group">
+                        <textarea id="educationSummary1" name="educationSummary1"></textarea>
+                        <button type="button" class="help-button material-icons" onclick="alert('Se desejar, especifique as atividades desenvolvidas. Cada linha é um tópico.')">info</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="add-education" onclick="addEducation()">+ Adicionar Formação</button>
+
+            <h3>Experiência Profissional</h3>
+            <div id="experienceContainer">
+                <div class="experience-section">
+                    <label for="experienceDate1">Data de início e término/estimativa:</label>
+                    <div class="input-group">
+                        <input type="text" id="experienceDate1" name="experienceDate1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Mês e ano até mês e ano ou Mês e ano até o momento\nex.1: Setembro de 2025 até outubro de 2025\nex.2: Junho de 2025 até o momento\nex.3: 09/2025 - 10/2025\nex.4: 06/2025 até o momento')">info</button>
+                    </div>
+
+                    <label for="experienceCompany1">Empresa:</label>
+                    <div class="input-group">
+                        <input type="text" id="experienceCompany1" name="experienceCompany1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome da empresa\nex: Empresa XYZ')">info</button>
+                    </div>
+
+                    <label for="experienceSummary1">Resumo:</label>
+                    <div class="input-group">
+                        <textarea id="experienceSummary1" name="experienceSummary1"></textarea>
+                        <button type="button" class="help-button material-icons" onclick="alert('Especifique as atividades desenvolvidas. Cada linha é um tópico. Traga métricas, projetos desenvolvidos, responsabilidades e atribuições.')">info</button>
+                    </div>
+
+                    <label for="experienceLocation1">Localização:</label>
+                    <div class="input-group">
+                        <input type="text" id="experienceLocation1" name="experienceLocation1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Cidade\nex: Salvador, Bahia')">info</button>
+                    </div>
+
+                    <label for="experiencePosition1">Cargo:</label>
+                    <div class="input-group">
+                        <input type="text" id="experiencePosition1" name="experiencePosition1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome da função\nex: Desenvolvedor Front-end')">info</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="add-experience" onclick="addExperience()">+ Adicionar Experiência</button>
+
+            <h3>Voluntariado</h3>
+            <div id="volunteerContainer">
+                <!-- Nenhum voluntariado inicialmente -->
+            </div>
+            <button type="button" class="add-volunteer" onclick="addVolunteer()">+ Adicionar Voluntariado</button>
+
+            <h3>Idiomas</h3>
+            <div id="languageContainer">
+                <!-- Nenhum idioma inicialmente -->
+            </div>
+            <button type="button" class="add-language" onclick="addLanguage()">+ Adicionar Idioma</button>
+
+            <h3>Cursos e Certificações</h3>
+            <div id="certificationContainer">
+                <div class="certification-section">
+                    <label for="certificationName1">Nome do Curso/Certificação:</label>
+                    <div class="input-group">
+                        <input type="text" id="certificationName1" name="certificationName1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome do curso ou certificação\nex: Curso de Desenvolvimento Web')">info</button>
+                    </div>
+
+                    <label for="certificationIssuer1">Emissor:</label>
+                    <div class="input-group">
+                        <input type="text" id="certificationIssuer1" name="certificationIssuer1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Instituição ou organização que emitiu a certificação\nex: Udemy')">info</button>
+                    </div>
+
+                    <label for="certificationDate1">Data de conclusão/estimativa:</label>
+                    <div class="input-group">
+                        <input type="text" id="certificationDate1" name="certificationDate1">
+                        <button type="button" class="help-button material-icons" onclick="alert('MM/AAAA de conclusão do curso ou certificação\nex: 06/2025')">info</button>
+                    </div>
+
+                    <label for="certificationSummary1">Resumo:</label>
+                    <div class="input-group">
+                        <textarea id="certificationSummary1" name="certificationSummary1"></textarea>
+                        <button type="button" class="help-button material-icons" onclick="alert('Se desejar, especifique as atividades desenvolvidas. Cada linha é um tópico.')">info</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="add-certification" onclick="addCertification()">+ Adicionar Certificação</button>
+
+            <button type="button" onclick="generateJSON()">Gerar JSON</button>
+            <button type="button" onclick="downloadJSON()">Baixar JSON</button>
+        </form>
+    </div>
+
+    <div class="json-container">
+        <h2>Preview do JSON</h2>
+        <textarea id="jsonOutput" readonly></textarea>
+        <button type="button" class="copy-button" onclick="copyJSON()">Copiar JSON</button>
+    </div>
+
+    <div class="chatgpt-container">
+        <h2>Estrutura do ChatGPT</h2>
+        <textarea id="chatgptOutput" readonly></textarea>
+        <button type="button" class="copy-button" onclick="copyChatGPT()">Copiar Estrutura ChatGPT</button>
+        <div class="help-section">
+            <p>Se o ChatGPT não te enviou o link para baixar ou se o arquivo não funcionou, tente de novo em outra IA (como o Deepseek ou o Qwen). Te enviará o código: copie, cole e baixe aqui abaixo.</p>
+            <textarea id="fixedJson" placeholder="Cole aqui"></textarea>
+            <button type="button" class="copy-button" onclick="downloadFixedJSON()">Baixar JSON Corrigido</button>
+        </div>
+        <button type="button" class="copy-button" onclick="toggleHelpSection()" style="margin-top: 10px;">Não deu certo?</button>
+    </div>
+</div>
+
+<script>
+    // Inicialização das variáveis contadoras
+    let experienceCounter = 1;
+    let certificationCounter = 1;
+    let educationCounter = 1;
+    let languageCounter = 0;
+    let profileCounter = 1; // Iniciar em 1, pois já temos uma seção inicial
+    let volunteerCounter = 0;
+
+    // Função para remover as tags <ul>, <li> e <p> e substituir por quebras de linha
+    function cleanSummaryHTML(summary) {
+        if (!summary) return '';
+        return summary
+            .replace(/<ul>/g, '')
+            .replace(/<\/ul>/g, '')
+            .replace(/<li>/g, '')
+            .replace(/<\/li>/g, '\n')
+            .replace(/<p>/g, '')
+            .replace(/<\/p>/g, '\n')
+            .trim();
+    }
+
+    // Função para adicionar experiência
+    function addExperience() {
+        experienceCounter++;
+        const experienceSection = document.createElement('div');
+        experienceSection.classList.add('experience-section');
+        experienceSection.innerHTML = `
+            <label for="experienceDate${experienceCounter}">Data de início e término/estimativa:</label>
+            <div class="input-group">
+                <input type="text" id="experienceDate${experienceCounter}" name="experienceDate${experienceCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Mês e ano até mês e ano ou Mês e ano até o momento\nex.1: Setembro de 2025 até outubro de 2025\nex.2: Junho de 2025 até o momento\nex.3: 09/2025 - 10/2025\nex.4: 06/2025 até o momento')">info</button>
+            </div>
+
+            <label for="experienceCompany${experienceCounter}">Empresa:</label>
+            <div class="input-group">
+                <input type="text" id="experienceCompany${experienceCounter}" name="experienceCompany${experienceCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome da empresa\nex: Empresa XYZ')">info</button>
+            </div>
+
+            <label for="experienceSummary${experienceCounter}">Resumo:</label>
+            <div class="input-group">
+                <textarea id="experienceSummary${experienceCounter}" name="experienceSummary${experienceCounter}"></textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Especifique as atividades desenvolvidas. Cada linha é um tópico. Traga métricas, projetos desenvolvidos, responsabilidades e atribuições.')">info</button>
+            </div>
+
+            <label for="experienceLocation${experienceCounter}">Localização:</label>
+            <div class="input-group">
+                <input type="text" id="experienceLocation${experienceCounter}" name="experienceLocation${experienceCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Cidade\nex: Salvador, Bahia')">info</button>
+            </div>
+
+            <label for="experiencePosition${experienceCounter}">Cargo:</label>
+            <div class="input-group">
+                <input type="text" id="experiencePosition${experienceCounter}" name="experiencePosition${experienceCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome da função\nex: Desenvolvedor Front-end')">info</button>
+            </div>
+        `;
+        document.getElementById('experienceContainer').appendChild(experienceSection);
+    }
+
+    // Função para adicionar certificação
+    function addCertification() {
+        certificationCounter++;
+        const certificationSection = document.createElement('div');
+        certificationSection.classList.add('certification-section');
+        certificationSection.innerHTML = `
+            <label for="certificationName${certificationCounter}">Nome do Curso/Certificação:</label>
+            <div class="input-group">
+                <input type="text" id="certificationName${certificationCounter}" name="certificationName${certificationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome do curso ou certificação\nex: Curso de Desenvolvimento Web')">info</button>
+            </div>
+
+            <label for="certificationIssuer${certificationCounter}">Emissor:</label>
+            <div class="input-group">
+                <input type="text" id="certificationIssuer${certificationCounter}" name="certificationIssuer${certificationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Instituição ou organização que emitiu a certificação\nex: Udemy')">info</button>
+            </div>
+
+            <label for="certificationDate${certificationCounter}">Data de conclusão/estimativa:</label>
+            <div class="input-group">
+                <input type="text" id="certificationDate${certificationCounter}" name="certificationDate${certificationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('MM/AAAA de conclusão do curso ou certificação\nex: 06/2025')">info</button>
+            </div>
+
+            <label for="certificationSummary${certificationCounter}">Resumo:</label>
+            <div class="input-group">
+                <textarea id="certificationSummary${certificationCounter}" name="certificationSummary${certificationCounter}"></textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Se desejar, especifique as atividades desenvolvidas. Cada linha é um tópico.')">info</button>
+            </div>
+        `;
+        document.getElementById('certificationContainer').appendChild(certificationSection);
+    }
+
+    // Função para adicionar formação acadêmica
+    function addEducation() {
+        educationCounter++;
+        const educationSection = document.createElement('div');
+        educationSection.classList.add('education-section');
+        educationSection.innerHTML = `
+            <label for="educationStudyType${educationCounter}">Tipo de Curso:</label>
+            <div class="input-group">
+                <input type="text" id="educationStudyType${educationCounter}" name="educationStudyType${educationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Ensino médio, Ensino superior, Bacharelado, Licenciatura ou Tecnólogo\nex: Bacharelado em Ciência da Computação')">info</button>
+            </div>
+
+            <label for="educationInstitution${educationCounter}">Instituição:</label>
+            <div class="input-group">
+                <input type="text" id="educationInstitution${educationCounter}" name="educationInstitution${educationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Universidade, Colégio, Centro educacional\nex: Universidade Federal da Bahia')">info</button>
+            </div>
+
+            <label for="educationDate${educationCounter}">Data de início e término/estimativa:</label>
+            <div class="input-group">
+                <input type="text" id="educationDate${educationCounter}" name="educationDate${educationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Mês e ano até mês e ano ou Mês e ano até o momento\nex.1: Setembro de 2025 até outubro de 2025\nex.2: Junho de 2025 até o momento\nex.3: 09/2025 - 10/2025\nex.4: 06/2025 até o momento')">info</button>
+            </div>
+
+            <label for="educationArea${educationCounter}">Área:</label>
+            <div class="input-group">
+                <input type="text" id="educationArea${educationCounter}" name="educationArea${educationCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Área de estudo\nex: Ciência da Computação')">info</button>
+            </div>
+
+            <label for="educationSummary${educationCounter}">Resumo:</label>
+            <div class="input-group">
+                <textarea id="educationSummary${educationCounter}" name="educationSummary${educationCounter}"></textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Se desejar, especifique as atividades desenvolvidas. Cada linha é um tópico.')">info</button>
+            </div>
+        `;
+        document.getElementById('educationContainer').appendChild(educationSection);
+    }
+
+    // Função para adicionar idioma
+    function addLanguage() {
+        languageCounter++;
+        const languageSection = document.createElement('div');
+        languageSection.classList.add('language-section');
+        languageSection.innerHTML = `
+            <label for="languageName${languageCounter}">Idioma:</label>
+            <div class="input-group">
+                <input type="text" id="languageName${languageCounter}" name="languageName${languageCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome do idioma\nex: Inglês')">info</button>
+            </div>
+
+            <label for="languageDescription${languageCounter}">Descrição:</label>
+            <div class="input-group">
+                <textarea id="languageDescription${languageCounter}" name="languageDescription${languageCounter}"></textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Nível de proficiência e instituição que você cursou\nex: Avançado (C1) - Fisk Centro de ensino')">info</button>
+            </div>
+        `;
+        document.getElementById('languageContainer').appendChild(languageSection);
+    }
+
+    // Função para adicionar perfil (rede social)
+    function addProfile() {
+        profileCounter++;
+        const profileSection = document.createElement('div');
+        profileSection.classList.add('profile-section');
+        profileSection.innerHTML = `
+            <label for="profileNetwork${profileCounter}">Rede Social:</label>
+            <div class="input-group">
+                <input type="text" id="profileNetwork${profileCounter}" name="profileNetwork${profileCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome da rede social\nex: LinkedIn, GitHub')">info</button>
+            </div>
+
+            <label for="profileUsername${profileCounter}">Nome de Usuário:</label>
+            <div class="input-group">
+                <input type="text" id="profileUsername${profileCounter}" name="profileUsername${profileCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome de usuário na rede social\nex: joaosilva')">info</button>
+            </div>
+
+            <label for="profileURL${profileCounter}">URL:</label>
+            <div class="input-group">
+                <input type="text" id="profileURL${profileCounter}" name="profileURL${profileCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Link completo do perfil\nex: https://linkedin.com/in/joaosilva')">info</button>
+            </div>
+        `;
+        document.getElementById('profileContainer').appendChild(profileSection);
+    }
+
+    // Função para adicionar voluntariado
+    function addVolunteer() {
+        volunteerCounter++;
+        const volunteerSection = document.createElement('div');
+        volunteerSection.classList.add('volunteer-section');
+        volunteerSection.innerHTML = `
+            <label for="volunteerOrganization${volunteerCounter}">Organização:</label>
+            <div class="input-group">
+                <input type="text" id="volunteerOrganization${volunteerCounter}" name="volunteerOrganization${volunteerCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Nome da ONG ou projeto voluntário\nex: ONG Amigos do Bem')">info</button>
+            </div>
+
+            <label for="volunteerPosition${volunteerCounter}">Cargo:</label>
+            <div class="input-group">
+                <input type="text" id="volunteerPosition${volunteerCounter}" name="volunteerPosition${volunteerCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Atividade realizada ou nome da função\nex: Professor voluntário')">info</button>
+            </div>
+
+            <label for="volunteerLocation${volunteerCounter}">Localização:</label>
+            <div class="input-group">
+                <input type="text" id="volunteerLocation${volunteerCounter}" name="volunteerLocation${volunteerCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Cidade\nex: Salvador, Bahia')">info</button>
+            </div>
+
+            <label for="volunteerDate${volunteerCounter}">Data de início e término/estimativa:</label>
+            <div class="input-group">
+                <input type="text" id="volunteerDate${volunteerCounter}" name="volunteerDate${volunteerCounter}">
+                <button type="button" class="help-button material-icons" onclick="alert('Mês e ano até mês e ano ou Mês e ano até o momento\nex.1: Setembro de 2025 até outubro de 2025\nex.2: Junho de 2025 até o momento\nex.3: 09/2025 - 10/2025\nex.4: 06/2025 até o momento')">info</button>
+            </div>
+
+            <label for="volunteerSummary${volunteerCounter}">Resumo:</label>
+            <div class="input-group">
+                <textarea id="volunteerSummary${volunteerCounter}" name="volunteerSummary${volunteerCounter}"></textarea>
+                <button type="button" class="help-button material-icons" onclick="alert('Se desejar, especifique as atividades desenvolvidas. Cada linha é um tópico.')">info</button>
+            </div>
+        `;
+        document.getElementById('volunteerContainer').appendChild(volunteerSection);
+    }
+
+    // Função para formatar o resumo com bullet points
+    function formatSummaryWithBulletPoints(summary) {
+        const lines = summary.split('\n').filter(line => line.trim() !== '');
+        if (lines.length === 0) return '';
+        const listItems = lines.map(line => `<li><p>${line.trim()}</p></li>`).join('');
+        return `<ul>${listItems}</ul>`;
+    }
+
+    // Função para gerar o JSON
+    function generateJSON() {
+        // Coleta das experiências
+        const experiences = [];
+        for (let i = 1; i <= experienceCounter; i++) {
+            const experience = {
+                id: `experience${i}`,
+                url: { href: "", label: "" }, // URL obrigatória
+                date: document.getElementById(`experienceDate${i}`).value,
+                company: document.getElementById(`experienceCompany${i}`).value,
+                summary: formatSummaryWithBulletPoints(document.getElementById(`experienceSummary${i}`).value),
+                location: document.getElementById(`experienceLocation${i}`).value,
+                position: document.getElementById(`experiencePosition${i}`).value,
+                visible: true
+            };
+            experiences.push(experience);
+        }
+
+        // Coleta das certificações
+        const certifications = [];
+        for (let i = 1; i <= certificationCounter; i++) {
+            const certification = {
+                id: `certification${i}`,
+                url: { href: "", label: "" }, // URL obrigatória
+                date: document.getElementById(`certificationDate${i}`).value,
+                name: document.getElementById(`certificationName${i}`).value,
+                issuer: document.getElementById(`certificationIssuer${i}`).value,
+                summary: formatSummaryWithBulletPoints(document.getElementById(`certificationSummary${i}`).value),
+                visible: true
+            };
+            certifications.push(certification);
+        }
+
+        // Coleta das formações acadêmicas
+        const educations = [];
+        for (let i = 1; i <= educationCounter; i++) {
+            const education = {
+                id: `education${i}`,
+                url: { href: "", label: "" }, // URL obrigatória
+                area: document.getElementById(`educationArea${i}`).value,
+                date: document.getElementById(`educationDate${i}`).value,
+                score: "",
+                summary: formatSummaryWithBulletPoints(document.getElementById(`educationSummary${i}`).value),
+                visible: true,
+                studyType: document.getElementById(`educationStudyType${i}`).value,
+                institution: document.getElementById(`educationInstitution${i}`).value
+            };
+            educations.push(education);
+        }
+
+        // Coleta dos idiomas
+        const languages = [];
+        for (let i = 1; i <= languageCounter; i++) {
+            const language = {
+                id: `language${i}`,
+                name: document.getElementById(`languageName${i}`).value,
+                level: 0, // Nível fixo como 0
+                visible: true,
+                description: document.getElementById(`languageDescription${i}`).value
+            };
+            languages.push(language);
+        }
+
+        // Coleta dos perfis (redes sociais)
+        const profiles = [];
+        for (let i = 1; i <= profileCounter; i++) {
+            const profile = {
+                id: `profile${i}`,
+                url: {
+                    href: document.getElementById(`profileURL${i}`).value,
+                    label: document.getElementById(`profileNetwork${i}`).value.toLowerCase()
+                },
+                icon: document.getElementById(`profileNetwork${i}`).value.toLowerCase(),
+                network: document.getElementById(`profileNetwork${i}`).value,
+                visible: true,
+                username: document.getElementById(`profileUsername${i}`).value
+            };
+            profiles.push(profile);
+        }
+
+        // Coleta dos voluntariados
+        const volunteers = [];
+        for (let i = 1; i <= volunteerCounter; i++) {
+            const volunteer = {
+                id: `volunteer${i}`,
+                url: { href: "", label: "" }, // URL obrigatória
+                organization: document.getElementById(`volunteerOrganization${i}`).value,
+                position: document.getElementById(`volunteerPosition${i}`).value,
+                location: document.getElementById(`volunteerLocation${i}`).value,
+                date: document.getElementById(`volunteerDate${i}`).value,
+                summary: formatSummaryWithBulletPoints(document.getElementById(`volunteerSummary${i}`).value),
+                visible: true
+            };
+            volunteers.push(volunteer);
+        }
+
+        // Obter o layout selecionado
+        const layout = document.getElementById('layout').value;
+        const typography = layout === 'poppins' ? {
+            font: {
+                size: 12,
+                family: "Poppins",
+                subset: "latin",
+                variants: ["regular"]
+            },
+            hideIcons: false,
+            lineHeight: 0.95,
+            underlineLinks: true
+        } : {
+            font: {
+                size: 12,
+                family: "Merriweather",
+                subset: "latin",
+                variants: ["regular"]
+            },
+            hideIcons: false,
+            lineHeight: 1.35,
+            underlineLinks: true
+        };
+
+        // Montagem do objeto final
+        const formData = {
+            basics: {
+                url: { href: "", label: "" }, // URL obrigatória
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                headline: document.getElementById('headline').value,
+                location: document.getElementById('location').value,
+                picture: {
+                    url: "",
+                    size: 156,
+                    aspectRatio: 1,
+                    borderRadius: 0,
+                    effects: {
+                        hidden: false,
+                        border: false,
+                        grayscale: false
+                    }
+                },
+                customFields: [
+                    {
+                        id: "v66ymrprdwhah6k9575rf14f",
+                        icon: "cake",
+                        name: "Data de nascimento",
+                        value: document.getElementById('birthdate').value
+                    }
+                ]
+            },
+            metadata: {
+                css: {
+                    value: ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+                    visible: false
+                },
+                page: {
+                    format: "a4",
+                    margin: 12,
+                    options: {
+                        breakLine: true,
+                        pageNumbers: true
+                    }
+                },
+                notes: "",
+                theme: {
+                    text: "#000000",
+                    primary: "#475569",
+                    background: "#ffffff"
+                },
+                layout: [
+                    [
+                        [
+                            "summary",
+                            "skills",
+                            "education",
+                            "experience",
+                            "volunteer",
+                            "projects",
+                            "references"
+                        ],
+                        [
+                            "profiles",
+                            "certifications",
+                            "interests",
+                            "languages",
+                            "awards",
+                            "publications"
+                        ]
+                    ]
+                ],
+                template: "kakuna",
+                typography: typography
+            },
+            sections: {
+                awards: {
+                    id: "awards",
+                    name: "PRÊMIOS",
+                    items: [],
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                skills: {
+                    id: "skills",
+                    name: "",
+                    items: [
+                        {
+                            id: "on4towre4roahqhfek4195xd",
+                            visible: true,
+                            name: "",
+                            description: document.getElementById('skills').value,
+                            level: 0,
+                            keywords: []
+                        }
+                    ],
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                summary: {
+                    id: "summary",
+                    name: "OBJETIVO",
+                    columns: 1,
+                    content: document.getElementById('summary').value,
+                    visible: true,
+                    separateLinks: true
+                },
+                profiles: {
+                    id: "profiles",
+                    name: "REDES SOCIAIS",
+                    items: profiles,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                projects: {
+                    id: "projects",
+                    name: "PROJETOS",
+                    items: [],
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                education: {
+                    id: "education",
+                    name: "FORMAÇÃO ACADÊMICA",
+                    items: educations,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                interests: {
+                    id: "interests",
+                    name: "INTERESSES",
+                    items: [],
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                languages: {
+                    id: "languages",
+                    name: "IDIOMAS",
+                    items: languages,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                volunteer: {
+                    id: "volunteer",
+                    name: "VOLUNTARIADO",
+                    items: volunteers,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                experience: {
+                    id: "experience",
+                    name: "EXPERIÊNCIA PROFISSIONAL",
+                    items: experiences,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                references: {
+                    id: "references",
+                    name: "REFERÊNCIAS",
+                    items: [],
+                    columns: 1,
+                    visible: false,
+                    separateLinks: true
+                },
+                publications: {
+                    id: "publications",
+                    name: "PUBLICAÇÕES",
+                    items: [],
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                certifications: {
+                    id: "certifications",
+                    name: "CURSOS E CERTIFICAÇÕES",
+                    items: certifications,
+                    columns: 1,
+                    visible: true,
+                    separateLinks: true
+                },
+                custom: {} // Inicializa a seção custom como um objeto vazio
+            }
+        };
+
+        // Exibição do JSON no textarea
+        const jsonOutput = JSON.stringify(formData, null, 2);
+        document.getElementById('jsonOutput').value = jsonOutput;
+
+        // Atualiza a estrutura do ChatGPT com o JSON gerado
+        const chatgptOutput = document.getElementById('chatgptOutput');
+        chatgptOutput.value = `${jsonOutput}\n## Todo este currículo JSON deve ser reenviado por você, ChatGPT, com as alterações necessárias na próxima etapa.\n\n## Quero que você reenvie a reescrita incluindo o restante do currículo e todas as suas seções completas com as instruções abaixo com o arquivo em link para ser baixado utilizando do analista de dados do ChatGPT para baixar o arquivo TODO incluindo o restante do currículo e todas as suas seções completas do currículo JSON. \n\n1. Altere a posição do currículo JSON e o objetivo profissional para a função que eu falar nas próximas mensagens e também crie/altere as habilidades condizentes com a função. Ou seja, enviarei uma função e você ALTERARÁ "[cargo]", [objetivo profissional] e as "[palavrachave]". Se houver em anexo uma descrição de vaga em pdf ou em texto, se baseie nela.\n\n1.1 Todas as habilidades serão adicionadas por palavras-chaves somente na descrição ("description": ) separados por | \n\nexemplo:         "skills": {\n            "id": "skills",\n            "name": "",\n            "items": [\n                {\n                    "id": "on4towre4roahqhfek4195xd",\n                    "visible": true,\n                    "name": "",\n                    "description": "Gestão Administrativa | Atendimento ao Cliente | Organização de Documentos | Rotinas Administrativas | Controle de Estoque | Arquivamento | Processamento de Dados | Suporte Administrativo | Comunicação Interna | Processos Administrativos | Agendamento de Reuniões | Controle de Agenda | Elaboração de Relatórios | Gestão de Documentos | Suporte em Recursos Humanos | Processamento de Correspondências | Conhecimento em Pacote Office | Gestão de Fluxos de Trabalho | Atendimento Telefônico | Planejamento de Tarefas | Responsabilidade | Eficiência Operacional | Trabalho em Equipe",\n                    "level": 0,\n                    "keywords": []\n\nCada habilidade deverá ser atribuída palavras-chaves com relação a descrição da vaga anexada ou pesquisada. Não crie outras skills, somente altere a description da primeira, nada além da description da skills.\n\n1.2 e então GERARÁ um [objetivo profissional] com base nessa função e no meu currículo.\n\n2. Reenvie todo o currículo JSON com as alterações feitas incluindo o restante do currículo e todas as suas seções completas arquivo em link para ser baixado utilizando do analista de dados do ChatGPT para baixar o arquivo TODO o currículo JSON.`;
+    }
+
+    // Função para baixar o JSON
+    function downloadJSON() {
+        const jsonOutput = document.getElementById('jsonOutput').value;
+        const firstName = document.getElementById('name').value.split(' ')[0].toLowerCase();
+        const fileName = `modelo-chatgpt-${firstName}-rr.json`;
+
+        const blob = new Blob([jsonOutput], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Função para copiar o JSON
+    function copyJSON() {
+        const jsonOutput = document.getElementById('jsonOutput');
+        jsonOutput.select();
+        document.execCommand('copy');
+        alert('JSON copiado para a área de transferência!');
+    }
+
+    // Função para copiar a estrutura do ChatGPT
+    function copyChatGPT() {
+        const chatgptOutput = document.getElementById('chatgptOutput');
+        chatgptOutput.select();
+        document.execCommand('copy');
+        alert('Estrutura do ChatGPT copiada para a área de transferência!');
+    }
+
+    // Função para importar JSON
+    function importJSON() {
+        document.getElementById('jsonFileInput').click();
+    }
+
+    // Função para importar JSON do arquivo
+    function importJSONFile(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    importFormData(importedData);
+                } catch (error) {
+                    alert('Erro ao analisar o JSON: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    // Função para importar dados do JSON para o formulário
+    function importFormData(data) {
+        // Limpar o formulário antes de importar
+        resetForm();
+
+        // Preencher informações básicas
+        document.getElementById('name').value = data.basics.name;
+        document.getElementById('email').value = data.basics.email;
+        document.getElementById('phone').value = data.basics.phone;
+        document.getElementById('headline').value = data.basics.headline;
+        document.getElementById('location').value = data.basics.location;
+        document.getElementById('birthdate').value = data.basics.customFields.find(field => field.name === "Data de nascimento").value;
+
+        // Preencher certificações
+        const certifications = data.sections.certifications.items;
+        certifications.forEach((cert, index) => {
+            if (index >= certificationCounter) {
+                addCertification();
+            }
+            document.getElementById(`certificationName${index + 1}`).value = cert.name;
+            document.getElementById(`certificationIssuer${index + 1}`).value = cert.issuer;
+            document.getElementById(`certificationDate${index + 1}`).value = cert.date;
+            document.getElementById(`certificationSummary${index + 1}`).value = cleanSummaryHTML(cert.summary);
+        });
+        certificationCounter = certifications.length;
+
+        // Preencher formações acadêmicas
+        const educations = data.sections.education.items;
+        educations.forEach((edu, index) => {
+            if (index >= educationCounter) {
+                addEducation();
+            }
+            document.getElementById(`educationStudyType${index + 1}`).value = edu.studyType;
+            document.getElementById(`educationInstitution${index + 1}`).value = edu.institution;
+            document.getElementById(`educationDate${index + 1}`).value = edu.date;
+            document.getElementById(`educationArea${index + 1}`).value = edu.area;
+            document.getElementById(`educationSummary${index + 1}`).value = cleanSummaryHTML(edu.summary);
+        });
+        educationCounter = educations.length;
+
+        // Preencher experiências profissionais
+        const experiences = data.sections.experience.items;
+        experiences.forEach((exp, index) => {
+            if (index >= experienceCounter) {
+                addExperience();
+            }
+            document.getElementById(`experienceDate${index + 1}`).value = exp.date;
+            document.getElementById(`experienceCompany${index + 1}`).value = exp.company;
+            document.getElementById(`experienceSummary${index + 1}`).value = cleanSummaryHTML(exp.summary);
+            document.getElementById(`experienceLocation${index + 1}`).value = exp.location;
+            document.getElementById(`experiencePosition${index + 1}`).value = exp.position;
+        });
+        experienceCounter = experiences.length;
+
+        // Preencher voluntariado
+        const volunteers = data.sections.volunteer.items;
+        volunteers.forEach((vol, index) => {
+            if (index >= volunteerCounter) {
+                addVolunteer();
+            }
+            document.getElementById(`volunteerOrganization${index + 1}`).value = vol.organization;
+            document.getElementById(`volunteerPosition${index + 1}`).value = vol.position;
+            document.getElementById(`volunteerLocation${index + 1}`).value = vol.location;
+            document.getElementById(`volunteerDate${index + 1}`).value = vol.date;
+            document.getElementById(`volunteerSummary${index + 1}`).value = cleanSummaryHTML(vol.summary);
+        });
+        volunteerCounter = volunteers.length;
+
+        // Preencher idiomas
+        const languages = data.sections.languages.items;
+        languages.forEach((lang, index) => {
+            if (index >= languageCounter) {
+                addLanguage();
+            }
+            document.getElementById(`languageName${index + 1}`).value = lang.name;
+            document.getElementById(`languageDescription${index + 1}`).value = lang.description;
+        });
+        languageCounter = languages.length;
+
+        // Preencher perfis (redes sociais)
+        const profiles = data.sections.profiles.items;
+        profiles.forEach((profile, index) => {
+            if (index >= profileCounter) {
+                addProfile();
+            }
+            document.getElementById(`profileNetwork${index + 1}`).value = profile.network;
+            document.getElementById(`profileUsername${index + 1}`).value = profile.username;
+            document.getElementById(`profileURL${index + 1}`).value = profile.url.href;
+        });
+        profileCounter = profiles.length;
+
+        // Preencher resumo e habilidades
+        document.getElementById('summary').value = cleanSummaryHTML(data.sections.summary.content);
+        document.getElementById('skills').value = data.sections.skills.items[0].description;
+
+        // Preencher o layout de tipografia
+        const layout = data.metadata.typography.font.family === "Poppins" ? "poppins" : "merriweather";
+        document.getElementById('layout').value = layout;
+    }
+
+    // Função para resetar o formulário
+    function resetForm() {
+        // Resetar campos básicos
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('headline').value = '';
+        document.getElementById('location').value = '';
+        document.getElementById('birthdate').value = '';
+
+        // Resetar certificações
+        while (certificationCounter > 1) {
+            document.getElementById('certificationContainer').removeChild(document.getElementById('certificationContainer').lastChild);
+            certificationCounter--;
+        }
+        document.getElementById('certificationName1').value = '';
+        document.getElementById('certificationIssuer1').value = '';
+        document.getElementById('certificationDate1').value = '';
+        document.getElementById('certificationSummary1').value = '';
+
+        // Resetar formações acadêmicas
+        while (educationCounter > 1) {
+            document.getElementById('educationContainer').removeChild(document.getElementById('educationContainer').lastChild);
+            educationCounter--;
+        }
+        document.getElementById('educationStudyType1').value = '';
+        document.getElementById('educationInstitution1').value = '';
+        document.getElementById('educationDate1').value = '';
+        document.getElementById('educationArea1').value = '';
+        document.getElementById('educationSummary1').value = '';
+
+        // Resetar experiências profissionais
+        while (experienceCounter > 1) {
+            document.getElementById('experienceContainer').removeChild(document.getElementById('experienceContainer').lastChild);
+            experienceCounter--;
+        }
+        document.getElementById('experienceDate1').value = '';
+        document.getElementById('experienceCompany1').value = '';
+        document.getElementById('experienceSummary1').value = '';
+        document.getElementById('experienceLocation1').value = '';
+        document.getElementById('experiencePosition1').value = '';
+
+        // Resetar voluntariado
+        while (volunteerCounter > 0) {
+            document.getElementById('volunteerContainer').removeChild(document.getElementById('volunteerContainer').lastChild);
+            volunteerCounter--;
+        }
+
+        // Resetar idiomas
+        while (languageCounter > 0) {
+            document.getElementById('languageContainer').removeChild(document.getElementById('languageContainer').lastChild);
+            languageCounter--;
+        }
+
+        // Resetar perfis (redes sociais)
+        while (profileCounter > 1) {
+            document.getElementById('profileContainer').removeChild(document.getElementById('profileContainer').lastChild);
+            profileCounter--;
+        }
+        document.getElementById('profileNetwork1').value = '';
+        document.getElementById('profileUsername1').value = '';
+        document.getElementById('profileURL1').value = '';
+
+        // Resetar resumo e habilidades
+        document.getElementById('summary').value = '';
+        document.getElementById('skills').value = '';
+
+        // Resetar layout de tipografia
+        document.getElementById('layout').value = 'merriweather';
+    }
+    function toggleHelpSection() {
+        const helpSection = document.querySelector('.help-section');
+        helpSection.style.display = helpSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function downloadFixedJSON() {
+        const jsonInput = document.getElementById('fixedJson').value;
+        const firstName = document.getElementById('name').value.split(' ')[0].toLowerCase();
+        const fileName = `modelo-corrigido-${firstName}-rr.json`;
+
+        try {
+            JSON.parse(jsonInput); // Validação do JSON
+            const blob = new Blob([jsonInput], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            alert('Erro no JSON: Por favor, cole um JSON válido.');
+        }
+    }
+</script>
+
+</body>
+</html>
