@@ -37,15 +37,19 @@ Este projeto fornece uma ferramenta de geração de currículo semiautomática. 
 8. **Importe no Reactive Resume:** Com este currículo JSON em mãos, iremos ao Reactive Resume, um poderoso site que além de fazer currículos altamente customizáveis, aceita a importação e exportação de currículos no formato JSON. Faça o upload do JSON no Reactive Resume, realize ajustes finais e exporte o currículo em PDF.  
 * Você poderá usar essa estrutura para outras funções. Nas próximas mensagens, afirme de novo a função/descrição da vaga.
 
-8.1 Faça seu registro https://rxresu.me/auth/login
-Caso já possua registro > https://rxresu.me/dashboard/resumes
-8.2. Clique em "Importe um currículo...", deixe o tipo do arquivo padrão (Reactive Resume .json), escolha o arquivo
-8.3. Clique em confirmar. Deverá aparecer um sinal verde escrito "Validado".
-Caso houver algum erro, observe o erro e cheque manualmente seu arquivo json se o ChatGPT (ou a IA utilizada) escreveu até a última linha ou acabou alucinando.
-Poderá repassar o erro para a ia e pedir para que ela conserte.
-8.4. Clique em Importar.
-8.5. Pronto, abra seu currículo.
-8.6. Vamos exportar, o botão de download está na direita da tela ou desça até achar. Exporte em PDF
+8.1 **Faça seu registro**: https://rxresu.me/auth/login
+* Caso já possua registro > https://rxresu.me/dashboard/resumes
+
+8.2. Clique em **"Importe um currículo..."**, deixe o tipo do arquivo padrão (Reactive Resume .json), escolha o arquivo
+
+8.3. Clique em **confirmar**. Deverá aparecer um sinal verde escrito "Validado".
+* Caso houver algum erro, observe o erro e cheque manualmente seu arquivo json se o ChatGPT (ou a IA utilizada) escreveu até a última linha ou acabou alucinando. Poderá repassar o erro para a ia e pedir para que ela conserte.
+
+8.4. Clique em **Importar**.
+
+8.5. Pronto, **abra** seu currículo.
+
+8.6. Vamos **exportar**, o botão de download está na direita da tela ou desça até achar. Exporte em PDF.
 * Opcionalmente, renomeie seu currículo e ative o compartilhamento público do currículo. Dessa forma, você terá um link permanente de visualização do seu currículo.
 
 ## Estrutura do Projeto  
@@ -58,4 +62,4 @@ Poderá repassar o erro para a ia e pedir para que ela conserte.
 
 * **"Erro ao analisar o JSON: ..."**: Ocorre se o JSON importado for inválido. Verifique a sintaxe.  
 * **"Erro no JSON: Por favor, cole um JSON válido."**: Aparece se o JSON corrigido na seção "Não deu certo?" ainda for inválido.  
-* **Erros Relacionados ao ChatGPT:** As respostas do ChatGPT podem ser inconsistentes. Pode haver casos em que o JSON gerado esteja incompleto ou incorreto. Nesses casos, revise manualmente o JSON, corrija os erros e use o botão "Baixar JSON Corrigido" ou tente novamente no ChatGPT. Alternativamente, teste outros modelos de IA caso esse problema ocorra com frequência.  
+* **Erros Relacionados ao ChatGPT:** As respostas do ChatGPT podem ser inconsistentes. Pode haver casos em que o JSON gerado esteja incompleto ou incorreto. Nesses casos, revise manualmente o JSON, corrija os erros e use o botão "Não deu certo?" e depois "Baixar JSON Corrigido" ou tente novamente no ChatGPT. Alternativamente, teste outros modelos de IA caso esse problema ocorra com frequência. Outros modelos não conseguirão enviar o link para baixar o currículo, mas irão enviar o código completo em JSON corretamente. Recomendo a utilização do https://chat.deepseek.com/ ou do https://chat.qwenlm.ai/ 
