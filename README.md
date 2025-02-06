@@ -10,11 +10,6 @@ Este projeto fornece uma ferramenta de geração de currículo semiautomática. 
 * **Compatibilidade com Reactive Resume:** O JSON gerado pode ser importado diretamente para o Reactive Resume para edições adicionais e exportação em PDF.  
 * **Tratamento de Erros (Saída Parcial do ChatGPT):** Inclui um mecanismo para lidar com casos em que o ChatGPT não gera um JSON completo, permitindo correção manual e download.  
 
-## Tecnologias Utilizadas  
-
-* HTML
-* Reactive Resume (para geração final do currículo e exportação em PDF)  
-
 ## Passo a passo
 
 1. **Acesse o Formulário Web:**
@@ -57,6 +52,11 @@ Este projeto fornece uma ferramenta de geração de currículo semiautomática. 
 * `Gerador de modelo de currículo RR.html`: Arquivo HTML principal com o formulário web.  
 * `README.md`: Este arquivo.  
 
+## Tecnologias Utilizadas  
+
+* HTML utilizando do Material Design, e JSON
+* Reactive Resume (para geração final do currículo e exportação em PDF)  
+* O código é bem simples, não sou programador. Qualquer contribuição é bem-vinda.
 
 ## Mensagens de Erro  
 
