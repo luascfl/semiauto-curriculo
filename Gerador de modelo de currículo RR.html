@@ -186,7 +186,27 @@
             </div>
 
             <h3>Redes Sociais</h3>
-            <div id="profileContainer"></div>
+            <div id="profileContainer">
+                <div class="profile-section">
+                    <label for="profileNetwork1">Rede Social:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileNetwork1" name="profileNetwork1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome da rede social\nex: LinkedIn, GitHub')">info</button>
+                    </div>
+
+                    <label for="profileUsername1">Nome de Usuário:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileUsername1" name="profileUsername1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Nome de usuário na rede social\nex: joaosilva')">info</button>
+                    </div>
+
+                    <label for="profileURL1">URL:</label>
+                    <div class="input-group">
+                        <input type="text" id="profileURL1" name="profileURL1">
+                        <button type="button" class="help-button material-icons" onclick="alert('Link completo do perfil\nex: https://linkedin.com/in/joaosilva')">info</button>
+                    </div>
+                </div>
+            </div>
             <button type="button" class="add-profile" onclick="addProfile()">+ Adicionar Perfil</button>
 
             <label for="summary">Objetivo:</label>
@@ -345,7 +365,7 @@
     let certificationCounter = 1;
     let educationCounter = 1;
     let languageCounter = 0;
-    let profileCounter = 0; // Iniciar em 1, pois já temos uma seção inicial
+    let profileCounter = 1; // Iniciar em 1, pois já temos uma seção inicial
     let volunteerCounter = 0;
 
     // Função para remover as tags <ul>, <li> e <p> e substituir por quebras de linha
